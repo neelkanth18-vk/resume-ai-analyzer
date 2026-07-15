@@ -12,22 +12,23 @@ router = APIRouter()
 
 @router.post("/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
 def register(user_in: UserCreate, db: Session = Depends(get_db)):
-    # Check if user exists
     user = db.query(User).filter(User.email == user_in.email).first()
     if user:
         raise HTTPException(status_code=400, detail="Email already registered")
-    
-    # Create new user
+
     hashed_password = get_password_hash(user_in.password)
+
     new_user = User(
         email=user_in.email,
         hashed_password=hashed_password,
         full_name=user_in.full_name,
         role=user_in.role
     )
+
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
+
     return new_user
 
 from fastapi.security import OAuth2PasswordRequestForm
